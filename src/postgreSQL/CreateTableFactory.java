@@ -34,7 +34,7 @@ public class CreateTableFactory {
 		
 		Properties dbProps = new Properties();
 		try {
-			FileInputStream in = new FileInputStream("/src/postgreSQL/db.properties");
+			FileInputStream in = new FileInputStream("src/postgreSQL/db.properties");
 			dbProps.load(in);
 			in.close();
 		} catch (IOException e1) {
@@ -102,11 +102,11 @@ public class CreateTableFactory {
 		int i = 0;
 		
 		try {			 
-			// THIS IS UPDATING TEST_Drive RIGHT NOW
-			 String sql = "INSERT INTO \"TEST_Drive\" (\"GameID\",\"PossessionTeamID\",\"DriveSequenceNum\","
-			 			+ "\"DriveStartQuarter\",\"DriveStartTime\",\"DriveStartField\",\"DriveEndQuarter\","
+			// TODO: change this to insert into the real Drive table, after testing is complete
+			 String sql = "INSERT INTO \"TEST_Drive\" (\"GameID\",\"PossessionTeamID\",\"DriveSequenceNum\",\"PosTeamDriveStartScore\","
+			 			+ "\"OppTeamDriveStartScore\",\"DriveStartQuarter\",\"DriveStartTime\",\"DriveStartField\",\"DriveEndQuarter\","
 			 			+ "\"DriveEndTime\",\"DriveEndField\",\"DriveTotalTime\",\"DriveTotYds\",\"DriveTotPenaltyYds\")"
-			 			+ "VALUES (? ? ? ? ? ? ? ? ? ? ? ?)";
+			 			+ "VALUES (? ? ? ? ? ? CAST(? AS TIME WITHOUT TIME ZONE) ? ? CAST(? AS TIME WITHOUT TIME ZONE) ? CAST(? AS TIME WITHOUT TIME ZONE) ? ?)";
 			 
 			 System.out.println("Inserting "+ driveData.size() +" rows...");
 			 for(DriveTableRow row : driveData) {				 
@@ -114,42 +114,43 @@ public class CreateTableFactory {
 
 				 stmt = c.prepareStatement(sql);
 				 stmt.setInt(1, row.gameID);
-				 stmt.setInt(2, row.possessionTeamSeasonID);
-				 stmt.setInt(3, row.driveNumOfGame);
-				 // skip posTeamStartScore & oppTeamStartScore -- not in our Excel Drive data
-				 // all the ints below this line are allowed to be null in the DB, so check for nulls
+				 stmt.setShort(2, row.possessionTeamSeasonID);
+				 stmt.setShort(3, row.driveNumOfGame);
+				 stmt.setNull(4, java.sql.Types.SMALLINT);
+				 stmt.setNull(5, java.sql.Types.SMALLINT);
 				 if(row.driveStartQuarter != null)
-					 stmt.setInt(4, row.driveStartQuarter);
+					 stmt.setShort(6, row.driveStartQuarter);
 				 else
-					 stmt.setNull(4, java.sql.Types.INTEGER);
-				 stmt.setObject(5, row.driveStartGameClock);
+					 stmt.setNull(6, java.sql.Types.SMALLINT);
+				 stmt.setTime(7, row.driveStartGameClock);
 				 if(row.driveStartField != null)
-					 stmt.setInt(6, row.driveStartField);
+					 stmt.setShort(8, row.driveStartField);
 				 else
-					 stmt.setNull(6, java.sql.Types.INTEGER);
+					 stmt.setNull(8, java.sql.Types.SMALLINT);
 				 if(row.driveEndQuarter != null)
-					 stmt.setInt(7, row.driveEndQuarter);
+					 stmt.setShort(9, row.driveEndQuarter);
 				 else
-					 stmt.setNull(7, java.sql.Types.INTEGER);
-				 stmt.setObject(8, row.driveEndGameClock);
+					 stmt.setNull(9, java.sql.Types.SMALLINT);
+				 stmt.setTime(10, row.driveEndGameClock);
 				 if(row.driveEndField != null)
-					 stmt.setInt(9, row.driveEndField);
+					 stmt.setShort(11, row.driveEndField);
 				 else
-					 stmt.setNull(9, java.sql.Types.INTEGER);
-				 stmt.setString(10, row.driveTotPosTime);
+					 stmt.setNull(11, java.sql.Types.SMALLINT);
+				 stmt.setTime(12, row.driveTotPosTime);
 				 if(row.driveTotYards != null)
-					 stmt.setInt(11, row.driveTotYards);
+					 stmt.setShort(13, row.driveTotYards);
 				 else
-					 stmt.setNull(11, java.sql.Types.INTEGER);
+					 stmt.setNull(13, java.sql.Types.SMALLINT);
 				 if(row.drivePenaltyYards != null)
-					 stmt.setInt(12, row.drivePenaltyYards);
+					 stmt.setShort(14, row.drivePenaltyYards);
 				 else
-					 stmt.setNull(12, java.sql.Types.INTEGER);
+					 stmt.setNull(14, java.sql.Types.SMALLINT);
 				 
 				 stmt.executeUpdate();
 				 
 				 i++;			 
-			 }			 
+			 }
+			 System.out.println("Successfully inserted all Drive data");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.err.println("Error on row " + i + "; " + e.getClass().getName()+ ": "+ e.getMessage());
@@ -163,7 +164,7 @@ public class CreateTableFactory {
 		i = 0;
 		
 		try {			 
-			// THIS IS UPDATING TEST_Drive_Drive_Outcome RIGHT NOW
+			// TODO: change this to insert into the real Drive_Drive_Outcome table, after testing is complete
 			 String sql = "INSERT INTO \"TEST_Drive_Drive_Outcome\" (\"DriveDriveOutcomeID\",\"DriveID\","
 			 			+ "\"DriveOutcomeID\",\"DriveOutcomeOrder\")"
 			 			+ "VALUES (? ? ? ?)";

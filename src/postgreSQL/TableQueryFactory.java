@@ -38,12 +38,12 @@ public class TableQueryFactory {
 		}
 	}
 	
-	public static int lookupTeamIDFromName(int year, String teamName) {
+	public static short lookupTeamIDFromName(int year, String teamName) {
 		createConnection();
 		
 		PreparedStatement stmt;
 		ResultSet rs;
-		int teamID = -1;
+		short teamID = -1;
 		
 		try {
 			 String sql;			 
@@ -63,7 +63,7 @@ public class TableQueryFactory {
 			 rs = stmt.executeQuery();
 			 // need to grab only the first element in the "set"
 			 rs.next();
-			 teamID = Integer.parseInt(rs.getString(1));
+			 teamID = Short.parseShort(rs.getString(1));
 			 
 			 c.close();
 		} catch (SQLException e) {

@@ -1,5 +1,6 @@
 package dbRowObjects;
 
+import java.sql.Time;
 import java.time.LocalTime;
 
 public class DriveTableRow {
@@ -9,17 +10,17 @@ public class DriveTableRow {
 	 * this data was not available from the Excel sheets pulled from NFLGame
 	 */
 	public Integer gameID;
-	public Integer possessionTeamSeasonID;
-	public Integer driveNumOfGame;
-	public Integer driveStartQuarter;
-	public LocalTime driveStartGameClock;
-	public Integer driveStartField;
-	public Integer driveEndQuarter;
-	public LocalTime driveEndGameClock;
-	public Integer driveEndField;
-	public Integer drivePenaltyYards;
-	public String driveTotPosTime;
-	public Integer driveTotYards;	
+	public Short possessionTeamSeasonID;
+	public Short driveNumOfGame;
+	public Short driveStartQuarter;
+	public Time driveStartGameClock;
+	public Short driveStartField;
+	public Short driveEndQuarter;
+	public Time driveEndGameClock;
+	public Short driveEndField;
+	public Short drivePenaltyYards;
+	public Time driveTotPosTime;
+	public Short driveTotYards;	
 	
 	public void setDriveStartOrEndTime(boolean isStartTime, String rawTime) {
 		if(rawTime == null || rawTime.isEmpty()) {
@@ -34,7 +35,7 @@ public class DriveTableRow {
 		for(int i=1; i<rawTime.length(); i++) {
 			if(!Qflag && rawTime.charAt(i-1) == 'Q') {
 				try {
-					int quarter = Integer.parseInt(rawTime.substring(i, i+1));
+					short quarter = Short.parseShort(rawTime.substring(i, i+1));
 					
 					if(isStartTime)
 						this.driveStartQuarter = quarter;
@@ -51,7 +52,10 @@ public class DriveTableRow {
 			}
 		}
 		
-		LocalTime sqlTime = LocalTime.parse(time);
+		LocalTime localTime = LocalTime.parse(time);
+		Time sqlTime = Time.valueOf(localTime);
+//		LocalDateTime sqlTime = LocalDateTime.parse(time);
+//		Timestamp sqlTime = Timestamp.valueOf(time);
 		
 		if(isStartTime) {
 			this.driveStartGameClock = sqlTime;
@@ -71,7 +75,7 @@ public class DriveTableRow {
 			return;			
 		}
 		rawStartField = rawStartField.toUpperCase();
-		int yardLine = -999;
+		short yardLine = -999;
 		
 		if(rawStartField.equals("MIDFIELD")) {
 			yardLine = 0;
@@ -79,7 +83,7 @@ public class DriveTableRow {
 			String oppOwn = rawStartField.substring(0, 3);
 			
 			try {
-				yardLine = Integer.parseInt(rawStartField.substring(4,rawStartField.length()));
+				yardLine = Short.parseShort(rawStartField.substring(4,rawStartField.length()));
 			} catch (NumberFormatException nfe) {
 				System.out.println("Error trying to parse integer - StartField - in GameID: " + this.gameID +", DriveNum: "+ this.driveNumOfGame);
 				this.driveStartField = null;
@@ -100,7 +104,7 @@ public class DriveTableRow {
 	}
 	
 	public void setEndFieldAndTotYards(String rawDriveTotYards) {
-		int driveTotYards;
+		short driveTotYards;
 				
 		if(this.driveStartField == null) {
 			this.driveEndField = null;
@@ -109,7 +113,7 @@ public class DriveTableRow {
 		}
 		
 		try {
-			driveTotYards = Integer.parseInt(rawDriveTotYards);
+			driveTotYards = Short.parseShort(rawDriveTotYards);
 		} catch (NumberFormatException e){
 			e.printStackTrace();
 			this.driveEndField = null;
@@ -120,7 +124,7 @@ public class DriveTableRow {
 		if(driveTotYards < -99 || driveTotYards > 99)
 			throw new IllegalArgumentException("Error: arg 'driveTotYards' is outside of the valid range");
 		
-		int endField = this.driveStartField + driveTotYards;
+		short endField = (short) (this.driveStartField + driveTotYards);
 		if(endField < -50 || endField > 50) {
 			this.driveEndField = null;
 			this.driveTotYards = null;
@@ -164,7 +168,20 @@ public class DriveTableRow {
 			}			
 		}
 		
-		this.driveTotPosTime = rawTotPosTime;
+		// append a leading 0 if time is less than 10 mins
+		if(rawTotPosTime.charAt(1) == ':') {
+			rawTotPosTime = "0"+rawTotPosTime;
+		}
+		
+		/*////////////////////////
+		LocalTime localTime = LocalTime.parse(time);
+		Time sqlTime = Time.valueOf(localTime);
+		//////////////////////////*/
+		
+		LocalTime localTime = LocalTime.parse(rawTotPosTime); //LocalTime.parse(rawTotPosTime);
+		Time sqlTime = Time.valueOf(localTime);
+//		Timestamp sqlTime = Timestamp.valueOf(rawTotPosTime);
+		this.driveTotPosTime = sqlTime;
 	}
 	
 }
