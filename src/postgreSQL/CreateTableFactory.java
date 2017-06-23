@@ -104,48 +104,70 @@ public class CreateTableFactory {
 		try {			 
 			// TODO: change this to insert into the real Drive table, after testing is complete
 			 String sql = "INSERT INTO \"TEST_Drive\" (\"GameID\",\"PossessionTeamID\",\"DriveSequenceNum\",\"PosTeamDriveStartScore\","
-			 			+ "\"OppTeamDriveStartScore\",\"DriveStartQuarter\",\"DriveStartTime\",\"DriveStartField\",\"DriveEndQuarter\","
-			 			+ "\"DriveEndTime\",\"DriveEndField\",\"DriveTotalTime\",\"DriveTotYds\",\"DriveTotPenaltyYds\")"
-			 			+ "VALUES (? ? ? ? ? ? CAST(? AS TIME WITHOUT TIME ZONE) ? ? CAST(? AS TIME WITHOUT TIME ZONE) ? CAST(? AS TIME WITHOUT TIME ZONE) ? ?)";
+			 			+ "\"OppTeamDriveStartScore\",\"DriveStartQuarter\",\"DriveStartField\",\"DriveEndQuarter\","
+			 			+ "\"DriveEndField\",\"DriveTotYds\",\"DriveTotPenaltyYds\",\"DriveStartTimeMinute\",\"DriveStartTimeSecond\","
+			 			+ "\"DriveEndTimeMinute\",\"DriveEndTimeSecond\",\"DriveTotPosTimeMinute\",\"DriveTotPosTimeSecond\")"
+			 			+ "VALUES (? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?)";
 			 
 			 System.out.println("Inserting "+ driveData.size() +" rows...");
 			 for(DriveTableRow row : driveData) {				 
 				 row = driveData.poll();
-
+				 ////////////////////////////////////////////////////////////////////
 				 stmt = c.prepareStatement(sql);
 				 stmt.setInt(1, row.gameID);
-				 stmt.setShort(2, row.possessionTeamSeasonID);
-				 stmt.setShort(3, row.driveNumOfGame);
+				 stmt.setInt(2, row.possessionTeamSeasonID);
+				 stmt.setInt(3, row.driveNumOfGame);
 				 stmt.setNull(4, java.sql.Types.SMALLINT);
 				 stmt.setNull(5, java.sql.Types.SMALLINT);
 				 if(row.driveStartQuarter != null)
-					 stmt.setShort(6, row.driveStartQuarter);
+					 stmt.setInt(6, row.driveStartQuarter);
 				 else
 					 stmt.setNull(6, java.sql.Types.SMALLINT);
-				 stmt.setTime(7, row.driveStartGameClock);
 				 if(row.driveStartField != null)
-					 stmt.setShort(8, row.driveStartField);
+					 stmt.setInt(7, row.driveStartField);
+				 else
+					 stmt.setNull(7, java.sql.Types.SMALLINT);
+				 if(row.driveEndQuarter != null)
+					 stmt.setInt(8, row.driveEndQuarter);
 				 else
 					 stmt.setNull(8, java.sql.Types.SMALLINT);
-				 if(row.driveEndQuarter != null)
-					 stmt.setShort(9, row.driveEndQuarter);
+				 if(row.driveEndField != null)
+					 stmt.setInt(9, row.driveEndField);
 				 else
 					 stmt.setNull(9, java.sql.Types.SMALLINT);
-				 stmt.setTime(10, row.driveEndGameClock);
-				 if(row.driveEndField != null)
-					 stmt.setShort(11, row.driveEndField);
+				 if(row.driveTotYards != null)
+					 stmt.setInt(10, row.driveTotYards);
+				 else
+					 stmt.setNull(10, java.sql.Types.SMALLINT);
+				 if(row.drivePenaltyYards != null)
+					 stmt.setInt(11, row.drivePenaltyYards);
 				 else
 					 stmt.setNull(11, java.sql.Types.SMALLINT);
-				 stmt.setTime(12, row.driveTotPosTime);
-				 if(row.driveTotYards != null)
-					 stmt.setShort(13, row.driveTotYards);
+				 if(row.driveStartGameClockMin != null)
+					 stmt.setInt(12, row.driveStartGameClockMin);
+				 else
+					 stmt.setNull(12, java.sql.Types.SMALLINT);
+				 if(row.driveStartGameClockSec != null)
+					 stmt.setInt(13, row.driveStartGameClockSec);
 				 else
 					 stmt.setNull(13, java.sql.Types.SMALLINT);
-				 if(row.drivePenaltyYards != null)
-					 stmt.setShort(14, row.drivePenaltyYards);
+				 if(row.driveEndGameClockMin != null)
+					 stmt.setInt(14, row.driveEndGameClockMin);
 				 else
 					 stmt.setNull(14, java.sql.Types.SMALLINT);
-				 
+				 if(row.driveEndGameClockSec != null)
+					 stmt.setInt(15, row.driveEndGameClockSec);
+				 else
+					 stmt.setNull(15, java.sql.Types.SMALLINT);
+				 if(row.driveTotPosTimeMin != null)
+					 stmt.setInt(16, row.driveTotPosTimeMin);
+				 else
+					 stmt.setNull(16, java.sql.Types.SMALLINT);
+				 if(row.driveTotPosTimeSec != null)
+					 stmt.setInt(17, row.driveTotPosTimeSec);
+				 else
+					 stmt.setNull(17, java.sql.Types.SMALLINT);
+				 //////////////////////////////////////////////////////////////////////
 				 stmt.executeUpdate();
 				 
 				 i++;			 
@@ -153,7 +175,14 @@ public class CreateTableFactory {
 			 System.out.println("Successfully inserted all Drive data");
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.err.println("SQLState: " + e.getSQLState());
+			System.err.println("Error code: " + e.getErrorCode());
 			System.err.println("Error on row " + i + "; " + e.getClass().getName()+ ": "+ e.getMessage());
+			Throwable t = e.getCause();
+			while(t != null) {
+				System.out.println("Cause: " + t);
+				t = t.getCause();
+			}
 			System.exit(-1);
 		}
 		
@@ -183,7 +212,14 @@ public class CreateTableFactory {
 			 }			 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.err.println("SQLState: " + e.getSQLState());
+			System.err.println("Error code: " + e.getErrorCode());
 			System.err.println("Error on row " + i + "; " + e.getClass().getName()+ ": "+ e.getMessage());
+			Throwable t = e.getCause();
+			while(t != null) {
+				System.out.println("Cause: " + t);
+				t = t.getCause();
+			}
 			System.exit(-1);
 		}
 	

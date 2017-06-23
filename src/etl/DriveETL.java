@@ -35,7 +35,7 @@ public class DriveETL {
 			drive.possessionTeamSeasonID = TableQueryFactory.lookupTeamIDFromName(year, row[5]);
 			
 			try {
-				drive.driveNumOfGame = Short.parseShort(row[4]);
+				drive.driveNumOfGame = Integer.parseInt(row[4]);
 			} catch (NumberFormatException e) {
 				e.printStackTrace();	// could just set it to null
 				break;
@@ -52,7 +52,7 @@ public class DriveETL {
 			drive.setEndFieldAndTotYards(row[12+numOutcomes]);
 			
 			try {
-				drive.drivePenaltyYards = Short.parseShort(row[10+numOutcomes]);
+				drive.drivePenaltyYards = Integer.parseInt(row[10+numOutcomes]);
 			} catch (NumberFormatException e){
 				e.printStackTrace();
 				break;
